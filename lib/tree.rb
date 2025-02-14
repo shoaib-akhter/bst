@@ -9,6 +9,17 @@ class Tree
     @root = build_tree(sorted_array)
   end
 
+  def insert(value, node = @root)
+    return @root = Node.new(value) if node.nil?  # If tree is empty, set root
+
+    if value < node.data
+      node.left.nil? ? node.left = Node.new(value) : insert(value, node.left)
+    elsif value > node.data
+      node.right.nil? ? node.right = Node.new(value) : insert(value, node.right)
+    end
+    # If value already exists, we do nothing (avoiding duplicates)
+  end
+
   private
 
   def build_tree(array)
