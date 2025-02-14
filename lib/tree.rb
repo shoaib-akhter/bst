@@ -1,6 +1,11 @@
+# frozen_string_literal: true
+
 # lib/tree.rb
 require_relative 'node'
+require_relative 'tree_traversal'
+require_relative 'tree_utils'
 
+# Represents a balanced Binary Search Tree (BST)
 class Tree
   attr_accessor :root
 
@@ -11,6 +16,7 @@ class Tree
 
   def insert(value, node = @root)
     return @root = Node.new(value) if node.nil?
+
     value < node.data ? insert_left(node, value) : insert_right(node, value)
   end
 
@@ -21,62 +27,28 @@ class Tree
   def find(value, node = @root)
     return nil if node.nil?
     return node if node.data == value
+
     value < node.data ? find(value, node.left) : find(value, node.right)
-  end
-
-  def inorder(&block)
-    dfs_inorder(@root, [], &block)
-  end
-
-  def preorder(&block)
-    dfs_preorder(@root, [], &block)
-  end
-
-  def postorder(&block)
-    dfs_postorder(@root, [], &block)
-  end
-
-  def height(node)
-    height_helper(node)
-  end
-  
-  def depth(node)
-    depth_helper(node, @root, 0)
   end
 
   def balanced?
     balanced_helper(@root)
   end
-  
+
   def rebalance
     @root = build_tree(inorder)
-  end
-
-  def level_order(&block)
-    return [] if @root.nil?
-    bfs_traverse(&block)
   end
 
   private
 
   def balanced_helper(node)
     return true if node.nil?
+
     left = height_helper(node.left)
     right = height_helper(node.right)
     return false if (left - right).abs > 1
-    balanced_helper(node.left) && balanced_helper(node.right)
-  end
 
-  def height_helper(node)
-    return -1 if node.nil?
-    1 + [height_helper(node.left), height_helper(node.right)].max
-  end
-  
-  def depth_helper(node, current, level)
-    return -1 if current.nil?
-    return level if current == node
-    move = node.data < current.data ? current.left : current.right
-    depth_helper(node, move, level + 1)
+    balanced_helper(node.left) && balanced_helper(node.right)
   end
 
   def insert_left(node, value)
@@ -90,6 +62,7 @@ class Tree
   def delete_node(node, value)
     return node if node.nil?
     return handle_deletion(node) if node.data == value
+
     value < node.data ? node.left = delete_node(node.left, value) : node.right = delete_node(node.right, value)
     node
   end
@@ -98,6 +71,7 @@ class Tree
     return nil if node.left.nil? && node.right.nil?
     return node.right if node.left.nil?
     return node.left if node.right.nil?
+
     replace_with_successor(node)
   end
 
@@ -108,52 +82,8 @@ class Tree
     node
   end
 
-  def dfs_inorder(node, values, &block)
-    return values if node.nil?
-    dfs_inorder(node.left, values, &block)
-    values << node.data
-    dfs_inorder(node.right, values, &block)
-    yield_or_return(values, &block)
-  end
-
-  def dfs_preorder(node, values, &block)
-    return values if node.nil?
-    values << node.data
-    dfs_preorder(node.left, values, &block)
-    dfs_preorder(node.right, values, &block)
-    yield_or_return(values, &block)
-  end
-
-  def dfs_postorder(node, values, &block)
-    return values if node.nil?
-    dfs_postorder(node.left, values, &block)
-    dfs_postorder(node.right, values, &block)
-    values << node.data
-    yield_or_return(values, &block)
-  end
-
-  def yield_or_return(values, &block)
+  def yield_or_return(values)
     block_given? ? values.each { |val| yield(Node.new(val)) } : values
-  end
-
-  def bfs_traverse(&block)
-    queue = [@root]
-    values = []
-    until queue.empty?
-      process_bfs(queue, values, &block)
-    end
-    values unless block_given?
-  end
-
-  def process_bfs(queue, values, &block)
-    node = queue.shift
-    block_given? ? yield(node) : values << node.data
-    enqueue_children(queue, node)
-  end
-
-  def enqueue_children(queue, node)
-    queue << node.left if node.left
-    queue << node.right if node.right
   end
 
   def find_min(node)
@@ -164,10 +94,11 @@ class Tree
   def build_tree(array)
     return nil if array.empty?
     return Node.new(array[0]) if array.length == 1
+
     mid = array.length / 2
     root = Node.new(array[mid])
     root.left = build_tree(array[0...mid])
-    root.right = build_tree(array[mid+1..])
+    root.right = build_tree(array[mid + 1..])
     root
   end
 end

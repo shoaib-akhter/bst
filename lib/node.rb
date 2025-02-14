@@ -1,15 +1,17 @@
+# frozen_string_literal: true
+
+# Represents a single node in a Binary Search Tree (BST)
 class Node
-    include Comparable
-    attr_accessor :data, :left, :right
+  include Comparable
+  attr_accessor :data, :left, :right
 
-    def initialize(data)
-        @data = data
-        @left = nil
-        @right = nil
-    end
+  def initialize(data)
+    @data = data
+    @left = nil
+    @right = nil
+  end
 
-    def <=>(other)
-        @data <=> other.data
-    end
-
+  def <=>(other)
+    @data <=> other.data
+  end
 end

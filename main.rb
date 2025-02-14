@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 # main.rb
 require_relative 'lib/tree'
 
 # Helper function to visualize the tree
-def pretty_print(node, prefix = '', is_left = true)
+def pretty_print(node, prefix = '', is_left: true)
   return if node.nil?
 
   pretty_print(node.right, "#{prefix}#{is_left ? '│   ' : '    '}", false)
