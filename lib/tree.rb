@@ -36,7 +36,27 @@ class Tree
     dfs_postorder(@root, [], &block)
   end
 
+  def height(node)
+    height_helper(node)
+  end
+  
+  def depth(node)
+    depth_helper(node, @root, 0)
+  end
+
   private
+
+  def height_helper(node)
+    return -1 if node.nil?
+    1 + [height_helper(node.left), height_helper(node.right)].max
+  end
+  
+  def depth_helper(node, current, level)
+    return -1 if current.nil?
+    return level if current == node
+    move = node.data < current.data ? current.left : current.right
+    depth_helper(node, move, level + 1)
+  end
 
   def insert_left(node, value)
     node.left.nil? ? node.left = Node.new(value) : insert(value, node.left)
