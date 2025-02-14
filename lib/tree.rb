@@ -44,7 +44,28 @@ class Tree
     depth_helper(node, @root, 0)
   end
 
+  def balanced?
+    balanced_helper(@root)
+  end
+  
+  def rebalance
+    @root = build_tree(inorder)
+  end
+
+  def level_order(&block)
+    return [] if @root.nil?
+    bfs_traverse(&block)
+  end
+
   private
+
+  def balanced_helper(node)
+    return true if node.nil?
+    left = height_helper(node.left)
+    right = height_helper(node.right)
+    return false if (left - right).abs > 1
+    balanced_helper(node.left) && balanced_helper(node.right)
+  end
 
   def height_helper(node)
     return -1 if node.nil?
@@ -115,11 +136,11 @@ class Tree
     block_given? ? values.each { |val| yield(Node.new(val)) } : values
   end
 
-  def bfs_traverse
+  def bfs_traverse(&block)
     queue = [@root]
     values = []
     until queue.empty?
-      process_bfs(queue, values, &Proc.new)
+      process_bfs(queue, values, &block)
     end
     values unless block_given?
   end
