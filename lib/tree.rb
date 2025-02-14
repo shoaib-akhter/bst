@@ -11,12 +11,7 @@ class Tree
 
   def insert(value, node = @root)
     return @root = Node.new(value) if node.nil?
-
-    if value < node.data
-      node.left.nil? ? node.left = Node.new(value) : insert(value, node.left)
-    elsif value > node.data
-      node.right.nil? ? node.right = Node.new(value) : insert(value, node.right)
-    end
+    value < node.data ? insert_left(node, value) : insert_right(node, value)
   end
 
   def delete(value)
@@ -26,46 +21,35 @@ class Tree
   def find(value, node = @root)
     return nil if node.nil?
     return node if node.data == value
-
     value < node.data ? find(value, node.left) : find(value, node.right)
   end
 
-  def level_order(&block)
-    return [] if @root.nil?
+  def inorder(&block)
+    dfs_inorder(@root, [], &block)
+  end
 
-    bfs_traverse(&block)
+  def preorder(&block)
+    dfs_preorder(@root, [], &block)
+  end
+
+  def postorder(&block)
+    dfs_postorder(@root, [], &block)
   end
 
   private
 
-  def bfs_traverse
-    queue = [@root]
-    values = []
-
-    until queue.empty?
-      node = queue.shift
-      block_given? ? yield(node) : values << node.data
-      enqueue_children(queue, node)
-    end
-
-    values unless block_given?
+  def insert_left(node, value)
+    node.left.nil? ? node.left = Node.new(value) : insert(value, node.left)
   end
 
-  def enqueue_children(queue, node)
-    queue << node.left if node.left
-    queue << node.right if node.right
+  def insert_right(node, value)
+    node.right.nil? ? node.right = Node.new(value) : insert(value, node.right)
   end
 
   def delete_node(node, value)
     return node if node.nil?
-
-    if value < node.data
-      node.left = delete_node(node.left, value)
-    elsif value > node.data
-      node.right = delete_node(node.right, value)
-    else
-      return handle_deletion(node)
-    end
+    return handle_deletion(node) if node.data == value
+    value < node.data ? node.left = delete_node(node.left, value) : node.right = delete_node(node.right, value)
     node
   end
 
@@ -73,11 +57,62 @@ class Tree
     return nil if node.left.nil? && node.right.nil?
     return node.right if node.left.nil?
     return node.left if node.right.nil?
+    replace_with_successor(node)
+  end
 
+  def replace_with_successor(node)
     successor = find_min(node.right)
     node.data = successor.data
     node.right = delete_node(node.right, successor.data)
     node
+  end
+
+  def dfs_inorder(node, values, &block)
+    return values if node.nil?
+    dfs_inorder(node.left, values, &block)
+    values << node.data
+    dfs_inorder(node.right, values, &block)
+    yield_or_return(values, &block)
+  end
+
+  def dfs_preorder(node, values, &block)
+    return values if node.nil?
+    values << node.data
+    dfs_preorder(node.left, values, &block)
+    dfs_preorder(node.right, values, &block)
+    yield_or_return(values, &block)
+  end
+
+  def dfs_postorder(node, values, &block)
+    return values if node.nil?
+    dfs_postorder(node.left, values, &block)
+    dfs_postorder(node.right, values, &block)
+    values << node.data
+    yield_or_return(values, &block)
+  end
+
+  def yield_or_return(values, &block)
+    block_given? ? values.each { |val| yield(Node.new(val)) } : values
+  end
+
+  def bfs_traverse
+    queue = [@root]
+    values = []
+    until queue.empty?
+      process_bfs(queue, values, &Proc.new)
+    end
+    values unless block_given?
+  end
+
+  def process_bfs(queue, values, &block)
+    node = queue.shift
+    block_given? ? yield(node) : values << node.data
+    enqueue_children(queue, node)
+  end
+
+  def enqueue_children(queue, node)
+    queue << node.left if node.left
+    queue << node.right if node.right
   end
 
   def find_min(node)
@@ -88,13 +123,10 @@ class Tree
   def build_tree(array)
     return nil if array.empty?
     return Node.new(array[0]) if array.length == 1
-
     mid = array.length / 2
     root = Node.new(array[mid])
-
     root.left = build_tree(array[0...mid])
     root.right = build_tree(array[mid+1..])
-
     root
   end
 end
