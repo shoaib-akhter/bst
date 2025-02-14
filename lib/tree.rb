@@ -30,7 +30,31 @@ class Tree
     value < node.data ? find(value, node.left) : find(value, node.right)
   end
 
+  def level_order(&block)
+    return [] if @root.nil?
+
+    bfs_traverse(&block)
+  end
+
   private
+
+  def bfs_traverse
+    queue = [@root]
+    values = []
+
+    until queue.empty?
+      node = queue.shift
+      block_given? ? yield(node) : values << node.data
+      enqueue_children(queue, node)
+    end
+
+    values unless block_given?
+  end
+
+  def enqueue_children(queue, node)
+    queue << node.left if node.left
+    queue << node.right if node.right
+  end
 
   def delete_node(node, value)
     return node if node.nil?
