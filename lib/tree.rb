@@ -7,6 +7,9 @@ require_relative 'tree_utils'
 
 # Represents a balanced Binary Search Tree (BST)
 class Tree
+  include TreeTraversals
+  include TreeUtils
+
   attr_accessor :root
 
   def initialize(array)
