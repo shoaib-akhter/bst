@@ -23,6 +23,13 @@ class Tree
     @root = delete_node(@root, value)
   end
 
+  def find(value, node = @root)
+    return nil if node.nil?
+    return node if node.data == value
+
+    value < node.data ? find(value, node.left) : find(value, node.right)
+  end
+
   private
 
   def delete_node(node, value)
